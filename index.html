@@ -119,6 +119,14 @@ label{font-size:11px;color:var(--dim);letter-spacing:.08em;display:block;margin-
 .mission-history li{display:grid;gap:3px;padding-left:10px;border-left:2px solid var(--aura);font-size:12px}
 .mission-history li b{color:var(--ink);font-weight:500}
 .mission-history li span,.mission-history li small{color:var(--dim);line-height:1.4}
+.account-sync{margin-top:24px;padding-top:16px;border-top:1px solid rgba(0,212,255,.22)}
+.account-sync>p{margin:0 0 12px;color:var(--dim);font-size:12px;line-height:1.5}
+.account-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+.account-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.account-actions button,.account-logout{padding:9px 12px;background:transparent;border:1px solid var(--aura);color:var(--aura);font:500 11px 'Chakra Petch',sans-serif;letter-spacing:.08em;cursor:pointer}
+.account-actions button:hover,.account-logout:hover{background:rgba(255,0,191,.12)}
+.account-actions button:disabled{opacity:.5;cursor:wait}
+.account-logout{margin-top:10px}
 </style>
 </head>
 <body>
@@ -175,6 +183,22 @@ label{font-size:11px;color:var(--dim);letter-spacing:.08em;display:block;margin-
     <details class="mission-history"><summary>RIWAYAT MISI</summary><ol id="missionHistory"></ol></details>
   </section>
 
+  <section class="account-sync">
+    <h2>AKUN &amp; SINKRONISASI</h2>
+    <p id="syncStatus" role="status" aria-live="polite">Masuk atau buat akun agar progres tersimpan dan tersinkron di perangkatmu.</p>
+    <form id="accountForm">
+      <div class="account-fields">
+        <div><label for="syncEmail">EMAIL</label><input id="syncEmail" type="email" autocomplete="email" required></div>
+        <div><label for="syncPassword">KATA SANDI</label><input id="syncPassword" type="password" autocomplete="current-password" minlength="8" required></div>
+      </div>
+      <div class="account-actions">
+        <button type="submit" data-auth="signin">MASUK</button>
+        <button type="submit" data-auth="signup">BUAT AKUN</button>
+      </div>
+    </form>
+    <button class="account-logout" id="syncLogout" type="button" hidden>KELUAR</button>
+  </section>
+
   <div class="note"><span>Palet: Neon Dusk</span></div>
 </div>
 
@@ -211,13 +235,19 @@ const skillDefaults=[
 const def={name:"LUQMAN",hero:"VIZONER",cls:"Luqman Aji Firmansyah",core:"Human-Centered AI",lvl:1,en:72,practice:"",aiEnabled:false,missionHistory:[],skills:skillDefaults.map(skill=>({...skill}))};
 let st;
 try{st=JSON.parse(localStorage.getItem(KEY))||def}catch(e){st=def}
+let localProfileSnapshot=JSON.parse(JSON.stringify(st));
 let cloud=null,tm=null;
+let syncClient=null,syncUser=null,syncReady=false,syncTimer=null;
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}
-  if(cloud){clearTimeout(tm);tm=setTimeout(()=>{cloud.set({json:JSON.stringify(st)}).catch(()=>{})},600)}};
+  if(!syncUser)localProfileSnapshot=JSON.parse(JSON.stringify(st));
+  if(cloud){clearTimeout(tm);tm=setTimeout(()=>{cloud.set({json:JSON.stringify(st)}).catch(()=>{})},600)}
+  if(syncClient&&syncUser&&syncReady){clearTimeout(syncTimer);syncTimer=setTimeout(()=>saveCloud().catch(error=>setSyncStatus(`Sinkronisasi gagal: ${error.message}`)),700)}};
 const fillEmptySkills=()=>{
   if(!Array.isArray(st.skills))st.skills=[];
   let changed=false;
-  const previousUxProfile=st.skills.length===uxSkillDefaults.length&&st.skills.every((skill,index)=>skill.n===uxSkillDefaults[index].n);
+  const previousUxProfile=st.skills.length===uxSkillDefaults.length&&st.skills.every((skill,index)=>
+    skill.n===uxSkillDefaults[index].n&&Number(skill.v)===uxSkillDefaults[index].v&&skill.d===uxSkillDefaults[index].d&&skill.t===uxSkillDefaults[index].t&&skill.m===uxSkillDefaults[index].m
+  );
   const previousGenericDefaults=st.skills.length===legacySkillDefaults.length&&st.skills.every((skill,index)=>skill.n===legacySkillDefaults[index].n&&Number(skill.v)===legacySkillDefaults[index].v&&skill.d===legacySkillDefaults[index].d);
   if(previousUxProfile||previousGenericDefaults){
     st.skills=skillDefaults.map(skill=>({...skill}));
@@ -246,6 +276,75 @@ const fillEmptySkills=()=>{
 };
 if(fillEmptySkills())save();
 const $=id=>document.getElementById(id);
+const setSyncStatus=message=>{const status=$("syncStatus");if(status)status.textContent=message};
+async function saveCloud(){
+  if(!syncClient||!syncUser||!syncReady)return;
+  const {error}=await syncClient.from("hud_profiles").upsert({user_id:syncUser.id,data:st,updated_at:new Date().toISOString()});
+  if(error)throw error;
+  setSyncStatus(`Tersinkron sebagai ${syncUser.email||"akunmu"}.`);
+}
+async function connectSyncSession(session){
+  if(!syncClient||!session?.user)return;
+  if(syncUser?.id===session.user.id&&syncReady)return;
+  syncUser=session.user;syncReady=false;setSyncStatus("Memuat progres dari cloud...");
+  const {data,error}=await syncClient.from("hud_profiles").select("data").maybeSingle();
+  if(error)throw error;
+  if(data?.data&&typeof data.data==="object"){
+    st={...def,...data.data};
+    if(!Array.isArray(st.skills))st.skills=skillDefaults.map(skill=>({...skill}));
+    fillEmptySkills();
+    try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}
+    head();list();radar();
+  }
+  syncReady=true;
+  if(!data)await saveCloud();
+  setSyncStatus(`Tersinkron sebagai ${syncUser.email||"akunmu"}.`);
+  $("accountForm").hidden=true;$("syncLogout").hidden=false;
+}
+async function initializeSync(){
+  try{
+    const response=await fetch("/.netlify/functions/coach?action=supabase-config");
+    const config=await response.json();
+    if(!response.ok)throw new Error(config.error||"Konfigurasi akun belum tersedia.");
+    const {createClient}=await import("https://esm.sh/@supabase/supabase-js@2");
+    syncClient=createClient(config.url,config.anonKey);
+    syncClient.auth.onAuthStateChange((event,session)=>{
+      if(event==="SIGNED_OUT"){
+        syncUser=null;syncReady=false;$("accountForm").hidden=false;$("syncLogout").hidden=true;
+        st=JSON.parse(JSON.stringify(localProfileSnapshot));save();head();list();radar();
+        setSyncStatus("Keluar. Progres tetap tersimpan di perangkat ini.");
+      }else if(session){
+        setTimeout(()=>connectSyncSession(session).catch(error=>setSyncStatus(`Gagal memuat cloud: ${error.message}`)),0);
+      }
+    });
+    const {data,error}=await syncClient.auth.getSession();
+    if(error)throw error;
+    if(data.session)await connectSyncSession(data.session);
+    else setSyncStatus("Masuk di semua perangkat untuk menyinkronkan skill dan riwayat.");
+  }catch(error){
+    setSyncStatus(error.message.includes("belum dikonfigurasi")?"Cloud belum disiapkan. Progres saat ini tetap tersimpan di perangkat ini.":`Sinkronisasi belum tersedia: ${error.message}`);
+  }
+}
+$("accountForm").addEventListener("submit",async event=>{
+  event.preventDefault();
+  if(!syncClient){setSyncStatus("Cloud belum dikonfigurasi. Selesaikan pengaturan Supabase terlebih dahulu.");return}
+  const button=event.submitter,mode=button.dataset.auth;
+  const email=$("syncEmail").value.trim(),password=$("syncPassword").value;
+  $("accountForm").querySelectorAll("button").forEach(item=>item.disabled=true);
+  setSyncStatus(mode==="signup"?"Membuat akun...":"Masuk dan memuat progres...");
+  try{
+    const result=mode==="signup"
+      ?await syncClient.auth.signUp({email,password})
+      :await syncClient.auth.signInWithPassword({email,password});
+    if(result.error)throw result.error;
+    if(mode==="signup"&&!result.data.session)setSyncStatus("Akun dibuat. Cek email untuk konfirmasi, lalu masuk di sini.");
+    else if(result.data.session)await connectSyncSession(result.data.session);
+  }catch(error){setSyncStatus(`Gagal ${mode==="signup"?"membuat akun":"masuk"}: ${error.message}`)}
+  finally{$("accountForm").querySelectorAll("button").forEach(item=>item.disabled=false)}
+});
+$("syncLogout").addEventListener("click",async()=>{
+  if(syncClient)await syncClient.auth.signOut();
+});
 const rank=v=>v>=90?"S":v>=80?"A":v>=65?"B":v>=50?"C":v>=30?"D":"E";
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,Number(v)||0));
 const skillColor=i=>`hsl(${(i*137.508+10)%360} 90% 62%)`;
@@ -423,6 +522,7 @@ $("eb").addEventListener("click",()=>{
 });
 head();$("xpbar").style.width="0";setTimeout(()=>{$("xpbar").style.width=st.en+"%"},100);
 list(true);radar();
+initializeSync();
 // Simpan ke akun Claude (kalau halaman dibuka lewat claude.ai); di luar itu tetap pakai penyimpanan lokal
 (async()=>{try{
   if(!window.claude)return;
