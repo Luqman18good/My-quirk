@@ -76,15 +76,26 @@ Jawab dalam bahasa Indonesia, alasan satu kalimat singkat, jangan menaikkan nila
         ],
         temperature: 0.4,
         max_tokens: 350,
-        response_format: { type: "json_object" },
+        chat_template_kwargs: { enable_thinking: false },
         stream: false
       })
     });
-    if (!response.ok) return json({ error: "NVIDIA tidak dapat menyusun misi saat ini." }, 502);
+    if (!response.ok) {
+      console.error("NVIDIA request failed with status", response.status);
+      return json({ error: `NVIDIA gagal menyusun misi (HTTP ${response.status}).` }, 502);
+    }
     const result = await response.json();
     const output = result.choices?.[0]?.message?.content;
     if (typeof output !== "string" || !output.trim()) return json({ error: "NVIDIA tidak memberikan rencana misi." }, 502);
-    const plan = JSON.parse(output);
+    const jsonStart = output.indexOf("{");
+    const jsonEnd = output.lastIndexOf("}");
+    if (jsonStart < 0 || jsonEnd <= jsonStart) return json({ error: "Jawaban NVIDIA tidak berisi rencana JSON." }, 502);
+    let plan;
+    try {
+      plan = JSON.parse(output.slice(jsonStart, jsonEnd + 1));
+    } catch {
+      return json({ error: "Format rencana NVIDIA tidak valid." }, 502);
+    }
     if (!["retry", "stretch", "next", "done"].includes(plan.action) || !Number.isInteger(plan.skillIndex)) {
       return json({ error: "Format rencana dari NVIDIA tidak valid." }, 502);
     }
@@ -93,7 +104,8 @@ Jawab dalam bahasa Indonesia, alasan satu kalimat singkat, jangan menaikkan nila
       : plan.skillIndex >= 0 && plan.skillIndex < skills.length;
     if (!validIndex) return json({ error: "Skill tujuan dari NVIDIA tidak valid." }, 502);
     return json({ action: plan.action, skillIndex: plan.skillIndex, mission: text(plan.mission, 300), reason: text(plan.reason, 180) });
-  } catch {
+  } catch (error) {
+    console.error("NVIDIA request error", error?.name || "Error");
     return json({ error: "Terjadi masalah saat menghubungi NVIDIA." }, 502);
   }
 }
