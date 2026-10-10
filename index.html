@@ -188,13 +188,25 @@ const legacySkillDefaults=[
  {n:"Pemecahan Masalah",v:50,d:"Urai kendala dan coba solusi satu per satu."},
  {n:"Konsistensi Belajar",v:65,d:"Belajar sedikit demi sedikit secara teratur."}
 ];
-const skillDefaults=[
+const uxSkillDefaults=[
  {n:"Observasi Pengguna",v:0,d:"Amati perilaku dan konteks pengguna sebelum menyimpulkan.",t:"Catat perilaku pengguna tanpa buru-buru menafsirkan.",m:"Rangkum tiga temuan dari satu sesi observasi."},
  {n:"Wawancara UX",v:0,d:"Gali pengalaman melalui pertanyaan netral dan terbuka.",t:"Latih pertanyaan terbuka dan gunakan pertanyaan lanjutan.",m:"Susun panduan wawancara singkat dan uji coba."},
  {n:"Psikologi Kognitif",v:0,d:"Pelajari perhatian, memori, dan pengambilan keputusan.",t:"Hubungkan satu konsep kognitif dengan contoh sehari-hari.",m:"Jelaskan satu konsep dan dampaknya pada sebuah desain."},
  {n:"Analisis Riset",v:0,d:"Rangkum data untuk menemukan pola dan kebutuhan.",t:"Kelompokkan catatan riset berdasarkan tema.",m:"Buat ringkasan temuan beserta bukti pendukungnya."},
  {n:"Desain Interaksi",v:0,d:"Ubah temuan menjadi alur dan prototipe yang bisa diuji.",t:"Sketsa satu alur pengguna lalu minta masukan.",m:"Buat prototipe sederhana dan uji pada satu orang."},
  {n:"AI Berpusat pada Manusia",v:0,d:"Rancang AI yang membantu sambil menjaga kendali manusia.",t:"Pikirkan manfaat, batasan, dan risiko untuk pengguna.",m:"Uraikan satu masalah manusia dan peran AI yang sesuai."}
+];
+const skillDefaults=[
+ {n:"Design",v:60,d:"Bisa mendesain berbagai hal yang berhubungan dengan ilustrasi.",t:"Latih sketsa atau ilustrasi dari referensi sederhana.",m:"Buat satu ilustrasi kecil dan catat prosesnya."},
+ {n:"Biopsikologi",v:10,d:"Memahami fungsi saraf dalam tubuh manusia.",t:"Hubungkan satu fungsi saraf dengan contoh perilaku sehari-hari.",m:"Jelaskan satu fungsi saraf dengan contoh sederhana."},
+ {n:"matematika",v:20,d:"Memahami hitungan dasar, tetapi masih lambat.",t:"Kerjakan latihan hitungan dasar dan cek langkahnya.",m:"Selesaikan lima soal dasar dengan langkah yang benar."},
+ {n:"Bhs. Inggris",v:40,d:"Paham bahasa Inggris, tetapi grammar belum sempurna.",t:"Latih satu pola grammar dengan contoh kalimat.",m:"Tulis lima kalimat lalu periksa grammar-nya."},
+ {n:"Bhs. Korea",v:0,d:"Sedang belajar bahasa Korea secara bertahap.",t:"Latih kosakata dasar dan susun kalimat singkat.",m:"Buat lima kalimat sederhana dalam bahasa Korea."},
+ {n:"Psisosial",v:15,d:"Memahami teori perilaku dalam kehidupan sosial.",t:"Amati interaksi sosial dan catat konteksnya.",m:"Catat tiga contoh perilaku sosial dan kaitkan dengan teori."},
+ {n:"Psikognitif",v:10,d:"Sedang mempelajari proses berpikir dan kognisi.",t:"Pelajari satu konsep kognitif lalu beri contoh.",m:"Jelaskan satu konsep perhatian atau memori dengan contoh."},
+ {n:"Psiumum",v:10,d:"Sedang membangun pemahaman umum dari berbagai topik.",t:"Pilih satu topik dan rangkum sumber yang tepercaya.",m:"Tulis ringkasan lima kalimat tentang topik yang dipelajari."},
+ {n:"coding",v:3,d:"Sedang belajar coding dari dasar.",t:"Latih satu konsep coding lewat latihan kecil.",m:"Buat program kecil dan jelaskan langkahnya."},
+ {n:"Psiperkembangan",v:10,d:"Sedang mempelajari psikologi perkembangan.",t:"Hubungkan satu tahap perkembangan dengan contoh nyata.",m:"Jelaskan satu konsep perkembangan dengan contoh sehari-hari."}
 ];
 const def={name:"LUQMAN",hero:"VIZONER",cls:"Luqman Aji Firmansyah",core:"Human-Centered AI",lvl:1,en:72,practice:"",aiEnabled:false,missionHistory:[],skills:skillDefaults.map(skill=>({...skill}))};
 let st;
@@ -205,12 +217,14 @@ const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}
 const fillEmptySkills=()=>{
   if(!Array.isArray(st.skills))st.skills=[];
   let changed=false;
+  const previousUxProfile=st.skills.length===uxSkillDefaults.length&&st.skills.every((skill,index)=>skill.n===uxSkillDefaults[index].n);
+  const previousGenericDefaults=st.skills.length===legacySkillDefaults.length&&st.skills.every((skill,index)=>skill.n===legacySkillDefaults[index].n&&Number(skill.v)===legacySkillDefaults[index].v&&skill.d===legacySkillDefaults[index].d);
+  if(previousUxProfile||previousGenericDefaults){
+    st.skills=skillDefaults.map(skill=>({...skill}));
+    changed=true;
+  }
   st.skills.forEach((skill,index)=>{
     const legacy=legacySkillDefaults[index];
-    if(legacy&&skill.n===legacy.n&&skill.v===legacy.v&&skill.d===legacy.d&&!skill.t&&!skill.m){
-      Object.assign(skill,skillDefaults[index]);
-      changed=true;
-    }
     const fallback=skillDefaults[index]||{n:`Kemampuan ${index+1}`,d:"Latih kemampuan ini secara bertahap melalui praktik rutin."};
     const name=typeof skill.n==="string"?skill.n.trim():"";
     const placeholder=!name||/^skill(?:\s+\d+| baru)?$/i.test(name);
