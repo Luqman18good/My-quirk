@@ -6,6 +6,12 @@ const json = (body, status = 200) => new Response(JSON.stringify(body), {
 const text = (value, max) => typeof value === "string" ? value.trim().slice(0, max) : "";
 
 export default async function handler(request) {
+    if (request.method === "GET" && new URL(request.url).searchParams.get("action") === "supabase-config") {
+    const supabaseUrl = process.env.SUPABASE_URL || "";
+    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || "";
+    if (!supabaseUrl || !supabaseAnonKey) return json({ error: "Sinkronisasi akun belum dikonfigurasi." }, 503);
+    return json({ url: supabaseUrl, anonKey: supabaseAnonKey });
+    }
   if (request.method !== "POST") return json({ error: "Method not allowed." }, 405);
   const apiKey = process.env.NVIDIA_API_KEY;
   if (!apiKey) return json({ error: "AI belum dikonfigurasi di Netlify." }, 503);
