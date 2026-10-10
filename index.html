@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#020024">
+<meta name="description" content="Profil kemampuan Luqman dalam tampilan HUD neon">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HUD Luqman">
+<title>HUD Luqman</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cyan:#ff00bf; --aura:#ff00bf; --void:#020024; --deep:#050a3a; --mid:#6b062d; --ink:#d8f6ff; --dim:#6fa6bf;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;min-height:100vh;background:radial-gradient(120% 90% at 50% 110%,var(--mid) 0%,var(--deep) 45%,var(--void) 100%);color:var(--ink);font-family:'Chakra Petch',system-ui,sans-serif;font-weight:300;display:flex;justify-content:center;padding:20px 14px}
+.hud{width:100%;max-width:980px;position:relative;padding:22px;border:1px solid rgba(0,212,255,.28);background:linear-gradient(180deg,rgba(2,0,36,.72),rgba(2,0,36,.9));clip-path:polygon(0 0,calc(100% - 28px) 0,100% 28px,100% 100%,28px 100%,0 calc(100% - 28px));box-shadow:0 0 60px rgba(0,212,255,.12) inset}
+.hud::before,.hud::after{content:"";position:absolute;width:42px;height:42px;border:2px solid var(--cyan);pointer-events:none}
+.hud::before{top:-1px;left:-1px;border-right:0;border-bottom:0}
+.hud::after{bottom:-1px;right:-1px;border-left:0;border-top:0}
+.scan{position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);box-shadow:0 0 18px var(--cyan);opacity:0;animation:scan 1.6s ease-out .2s 1}
+@keyframes scan{0%{top:0;opacity:.9}100%{top:100%;opacity:0}}
+header{display:flex;gap:18px;align-items:center;flex-wrap:wrap;padding-bottom:18px;border-bottom:1px solid rgba(0,212,255,.22)}
+.badge{width:84px;height:96px;flex:none;display:grid;place-items:center;background:linear-gradient(180deg,rgba(255,0,191,.28),rgba(255,0,191,.04));clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);position:relative}
+.badge::before{content:"";position:absolute;inset:2px;background:var(--void);clip-path:inherit}
+.badge span{position:relative;font-weight:700;font-size:30px;color:var(--aura);text-shadow:0 0 14px var(--aura)}
+.id{flex:1;min-width:200px}
+.id h1{margin:0;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:clamp(26px,5vw,40px);font-weight:700;letter-spacing:.12em;color:#fff;text-shadow:0 0 22px rgba(0,212,255,.55)}
+.hero-name{display:inline-flex;align-items:center;padding:5px 8px;border:1px solid var(--aura);clip-path:polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,6px 100%,0 calc(100% - 6px));font-size:.4em;line-height:1;color:var(--aura);letter-spacing:.12em;text-shadow:0 0 10px var(--aura);white-space:nowrap}
+.id p{margin:4px 0 0;color:var(--dim);font-size:14px;letter-spacing:.06em}
+.id .core{color:var(--cyan);font-size:11px;letter-spacing:.12em;margin-top:8px}
+.lv{text-align:right}
+.lv b{display:block;font-size:34px;font-weight:700;color:var(--cyan);line-height:1}
+.lv small{color:var(--dim);font-size:12px;letter-spacing:.1em}
+.xp{margin-top:18px}
+.xp div{display:flex;justify-content:space-between;font-size:12px;color:var(--dim);margin-bottom:6px;letter-spacing:.08em}
+.track{height:8px;background:rgba(0,212,255,.1);clip-path:polygon(0 0,100% 0,calc(100% - 6px) 100%,0 100%)}
+.track i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--mid),var(--cyan));box-shadow:0 0 12px var(--cyan);transition:width 1.2s cubic-bezier(.2,.8,.2,1) .5s}
+main{display:grid;grid-template-columns:1.25fr 1fr;gap:26px;margin-top:22px}
+@media(max-width:760px){main{grid-template-columns:1fr}.lv{text-align:left}}
+h2{margin:0 0 14px;font-size:13px;font-weight:500;letter-spacing:.18em;color:var(--cyan);display:flex;align-items:center;gap:10px}
+h2::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(0,212,255,.5),transparent)}
+.skill{margin-bottom:15px}
+.skill .row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.skill .nm{font-weight:500;font-size:16px;color:#fff}
+.skill .rk{font-weight:700;color:var(--skill-color);font-size:15px}
+.skill .ds{font-size:12px;color:var(--dim);margin-top:5px}
+.skill-meta{display:grid;gap:5px;margin-top:7px;font-size:11px}
+.skill-meta div{display:grid;grid-template-columns:90px 1fr;gap:8px}
+.skill-meta b{color:var(--skill-color);font-size:10px;letter-spacing:.08em;font-weight:500}
+.skill-meta span{color:var(--dim)}
+.seg{display:grid;grid-template-columns:repeat(20,1fr);gap:3px}
+.seg i{height:9px;background:rgba(0,212,255,.1);transform:skewX(-20deg);transition:background .2s,box-shadow .2s}
+.seg i.on{background:var(--skill-color);box-shadow:0 0 8px var(--skill-color)}
+.radar{display:grid;place-items:center}
+.mission-panel{width:100%;padding:15px;margin-bottom:18px;border:1px solid rgba(255,0,191,.42);border-left:3px solid var(--aura);border-radius:4px;background:rgba(255,0,191,.06)}
+.ai-settings{width:100%;margin:0 0 10px;padding:10px;border:1px solid rgba(255,0,191,.22);border-radius:4px;background:rgba(2,0,36,.35)}
+.ai-toggle{display:flex;align-items:center;gap:8px;margin:0;color:var(--ink);font-size:11px;cursor:pointer}
+.ai-toggle input{width:auto;margin:0;accent-color:var(--aura)}
+.ai-settings p,.coach-status{margin:7px 0 0;color:var(--dim);font-size:10px;line-height:1.45}
+.coach-status{min-height:14px;color:var(--aura)}
+.mission-tag{margin:0 0 8px;color:var(--aura);font-size:10px;letter-spacing:.14em}
+.mission-panel h3{margin:0 0 10px;color:#fff;font-size:18px;font-weight:500}
+.mission-panel p{margin:7px 0;color:var(--dim);font-size:12px;line-height:1.45}
+.mission-panel p b{color:var(--ink);font-weight:500}
+.mission-feedback{margin-top:13px}
+.mission-feedback textarea{min-height:62px}
+.challenge-fieldset{margin:12px 0 0;padding:0;border:0}
+.challenge-fieldset legend{margin-bottom:7px;color:var(--dim);font-size:10px;letter-spacing:.1em}
+.challenge-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.challenge-option{display:flex;align-items:center;justify-content:center;gap:5px;margin:0;padding:8px 4px;border:1px solid rgba(255,0,191,.25);color:var(--dim);font-size:11px;cursor:pointer}
+.challenge-option input{width:auto;margin:0;accent-color:var(--aura)}
+.mission-panel button{width:100%;margin-top:10px;padding:10px;background:transparent;border:1px solid var(--aura);color:var(--aura);font:500 12px 'Chakra Petch',sans-serif;letter-spacing:.08em;cursor:pointer}
+.mission-panel button:hover,.mission-panel button:focus-visible{background:rgba(255,0,191,.14);outline:2px solid var(--aura);outline-offset:2px}
+.mission-empty{padding:5px 0}
+.radar-heading{width:100%;margin-top:2px}
+.radar svg{width:100%;max-width:340px;height:auto;overflow:visible}
+.radar text{fill:var(--ink);font-size:11px;font-family:inherit;font-weight:500}
+.note{margin-top:20px;padding-top:14px;border-top:1px solid rgba(195, 0, 255, 0.22);font-size:12px;color:var(--dim);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.note b{color:var(--cyan);font-weight:500}
+@media(prefers-reduced-motion:reduce){.scan{display:none}.track i{transition:none}}
+
+.eb{position:absolute;top:12px;right:40px;z-index:3;background:transparent;color:var(--cyan);border:1px solid var(--cyan);font:500 12px 'Chakra Petch',sans-serif;letter-spacing:.12em;padding:6px 12px;cursor:pointer;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px))}
+.eb:hover,.eb:focus-visible{background:rgba(0,212,255,.15);outline:none}
+.edit .eb{background:var(--cyan);color:var(--void)}
+.ep{display:none;margin-top:16px;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.edit .ep{display:grid}
+input{width:100%;background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.3);color:var(--ink);font:300 14px 'Chakra Petch',sans-serif;padding:7px 9px}
+textarea{width:100%;resize:vertical;min-height:66px;background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.3);color:var(--ink);font:300 14px 'Chakra Petch',sans-serif;padding:7px 9px}
+input:focus{outline:2px solid var(--cyan);outline-offset:0}
+textarea:focus{outline:2px solid var(--cyan);outline-offset:0}
+label{font-size:11px;color:var(--dim);letter-spacing:.08em;display:block;margin-bottom:4px}
+.sk-ed{display:none;gap:6px;grid-template-columns:1fr 70px 36px;margin-top:8px}
+.edit .sk-ed{display:grid}
+.sk-ed input.d,.sk-ed input.t,.sk-ed input.m{grid-column:1/4}
+.del{background:transparent;border:1px solid rgba(37, 2, 2, 0.25);color:var(--ink);cursor:pointer;font-size:16px}
+.del:hover,.del:focus-visible{border-color:var(--cyan);color:var(--cyan);outline:none}
+.add{display:none;width:100%;margin-top:6px;padding:10px;background:transparent;border:1px dashed var(--cyan);color:var(--cyan);font:500 13px 'Chakra Petch',sans-serif;letter-spacing:.1em;cursor:pointer}
+.edit .add{display:block}
+.edit .ds,.edit .nm{display:none}
+.edit .skill .row{margin-bottom:0}
+.edit .skill .rk{display:none}
+.edit .skill-meta{display:none}
+.training-log{margin-top:24px;padding-top:16px;border-top:1px solid rgba(0,212,255,.22)}
+.training-log p{margin:0;color:var(--ink);font-size:13px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.training-log .practice-editor{display:none;margin-top:10px}
+.edit .training-log .practice-editor{display:block}
+.mission-history{margin-top:16px;padding-top:12px;border-top:1px solid rgba(0,212,255,.16)}
+.mission-history summary{color:var(--cyan);font-size:11px;letter-spacing:.12em;cursor:pointer}
+.mission-history ol{display:grid;gap:10px;margin:12px 0 0;padding:0;list-style:none}
+.mission-history li{display:grid;gap:3px;padding-left:10px;border-left:2px solid var(--aura);font-size:12px}
+.mission-history li b{color:var(--ink);font-weight:500}
+.mission-history li span,.mission-history li small{color:var(--dim);line-height:1.4}
+</style>
+</head>
+<body>
+<div class="hud" id="hud">
+  <button class="eb" id="eb" type="button">EDIT</button>
+  <div class="scan"></div>
+  <header>
+    <div class="badge"><span id="hi">L</span></div>
+    <div class="id">
+      <h1><span id="hn">LUQMAN</span><span class="hero-name" id="heroName">VIZONER</span></h1>
+      <p id="hc">Luqman Aji Firmansyah</p>
+      <p class="core">CORE ABILITY / <span id="coreAbility">Human-Centered AI</span></p>
+    </div>
+    <div class="lv"><b id="lvl">Lv. 01</b><small>PLAYER STATUS</small></div>
+  </header>
+
+
+  <div class="ep">
+    <div><label for="fn">NAMA</label><input id="fn" maxlength="24"></div>
+    <div><label for="fc">KETERANGAN / KELAS</label><input id="fc" maxlength="60"></div>
+    <div><label for="fl">LEVEL</label><input id="fl" type="number" min="1" max="999"></div>
+    <div><label for="fe">ENERGI (0-100)</label><input id="fe" type="number" min="0" max="100"></div>
+    <div><label for="fcore">KEMAMPUAN INTI</label><input id="fcore" maxlength="60"></div>
+    <div><label for="fhero">NAMA HERO</label><input id="fhero" maxlength="30"></div>
+  </div>
+  <div class="xp">
+    <div><span>ENERGI</span><span id="xpv">0%</span></div>
+    <div class="track"><i id="xpbar"></i></div>
+  </div>
+
+  <main>
+    <section>
+      <h2>SKILL AKTIF</h2>
+      <div id="skills"></div>
+      <button class="add" id="add" type="button">+ TAMBAH SKILL</button>
+    </section>
+    <section class="radar">
+      <h2 style="width:100%">COACH ADAPTIF</h2>
+      <div class="ai-settings">
+        <label class="ai-toggle"><input id="aiEnabled" type="checkbox"> Gunakan NVIDIA AI untuk mengatur misi</label>
+        <p>Saat aktif, ringkasan skill, misi, pilihan kesulitan, dan bukti latihan dikirim ke NVIDIA. Jangan masukkan nama orang atau informasi sensitif.</p>
+      </div>
+      <p class="coach-status" id="coachStatus" role="status" aria-live="polite"></p>
+      <div class="mission-panel" id="missionPanel" aria-live="polite"></div>
+      <h2 class="radar-heading">RADAR SKILL</h2>
+      <svg id="radar" viewBox="-130 -125 260 250" role="img" aria-label="Grafik radar kemampuan"></svg>
+    </section>
+  </main>
+
+  <section class="training-log">
+    <h2>CATATAN LATIHAN TERAKHIR</h2>
+    <p id="lastPractice">Belum ada catatan latihan.</p>
+    <div class="practice-editor"><label for="practiceInput">BUKTI ATAU HAL YANG DIPELAJARI</label><textarea id="practiceInput" maxlength="240" placeholder="Contoh: mencoba wawancara singkat dan belajar mengajukan pertanyaan terbuka."></textarea></div>
+    <details class="mission-history"><summary>RIWAYAT MISI</summary><ol id="missionHistory"></ol></details>
+  </section>
+
+  <div class="note"><span>Palet: Neon Dusk</span></div>
+</div>
+
+<script>
+const KEY="hud.luqman.v1";
+const legacySkillDefaults=[
+ {n:"Komunikasi",v:80,d:"Sampaikan ide dengan jelas dan dengarkan masukan."},
+ {n:"Disiplin",v:70,d:"Bangun kebiasaan menyelesaikan tugas secara konsisten."},
+ {n:"Kreativitas",v:60,d:"Coba pendekatan baru saat membuat atau menyelesaikan sesuatu."},
+ {n:"Kerja Sama",v:75,d:"Berbagi tugas, bertukar ide, dan saling membantu."},
+ {n:"Pemecahan Masalah",v:50,d:"Urai kendala dan coba solusi satu per satu."},
+ {n:"Konsistensi Belajar",v:65,d:"Belajar sedikit demi sedikit secara teratur."}
+];
+const skillDefaults=[
+ {n:"Observasi Pengguna",v:0,d:"Amati perilaku dan konteks pengguna sebelum menyimpulkan.",t:"Catat perilaku pengguna tanpa buru-buru menafsirkan.",m:"Rangkum tiga temuan dari satu sesi observasi."},
+ {n:"Wawancara UX",v:0,d:"Gali pengalaman melalui pertanyaan netral dan terbuka.",t:"Latih pertanyaan terbuka dan gunakan pertanyaan lanjutan.",m:"Susun panduan wawancara singkat dan uji coba."},
+ {n:"Psikologi Kognitif",v:0,d:"Pelajari perhatian, memori, dan pengambilan keputusan.",t:"Hubungkan satu konsep kognitif dengan contoh sehari-hari.",m:"Jelaskan satu konsep dan dampaknya pada sebuah desain."},
+ {n:"Analisis Riset",v:0,d:"Rangkum data untuk menemukan pola dan kebutuhan.",t:"Kelompokkan catatan riset berdasarkan tema.",m:"Buat ringkasan temuan beserta bukti pendukungnya."},
+ {n:"Desain Interaksi",v:0,d:"Ubah temuan menjadi alur dan prototipe yang bisa diuji.",t:"Sketsa satu alur pengguna lalu minta masukan.",m:"Buat prototipe sederhana dan uji pada satu orang."},
+ {n:"AI Berpusat pada Manusia",v:0,d:"Rancang AI yang membantu sambil menjaga kendali manusia.",t:"Pikirkan manfaat, batasan, dan risiko untuk pengguna.",m:"Uraikan satu masalah manusia dan peran AI yang sesuai."}
+];
+const def={name:"LUQMAN",hero:"VIZONER",cls:"Luqman Aji Firmansyah",core:"Human-Centered AI",lvl:1,en:72,practice:"",aiEnabled:false,missionHistory:[],skills:skillDefaults.map(skill=>({...skill}))};
+let st;
+try{st=JSON.parse(localStorage.getItem(KEY))||def}catch(e){st=def}
+let cloud=null,tm=null;
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}
+  if(cloud){clearTimeout(tm);tm=setTimeout(()=>{cloud.set({json:JSON.stringify(st)}).catch(()=>{})},600)}};
+const fillEmptySkills=()=>{
+  if(!Array.isArray(st.skills))st.skills=[];
+  let changed=false;
+  st.skills.forEach((skill,index)=>{
+    const legacy=legacySkillDefaults[index];
+    if(legacy&&skill.n===legacy.n&&skill.v===legacy.v&&skill.d===legacy.d&&!skill.t&&!skill.m){
+      Object.assign(skill,skillDefaults[index]);
+      changed=true;
+    }
+    const fallback=skillDefaults[index]||{n:`Kemampuan ${index+1}`,d:"Latih kemampuan ini secara bertahap melalui praktik rutin."};
+    const name=typeof skill.n==="string"?skill.n.trim():"";
+    const placeholder=!name||/^skill(?:\s+\d+| baru)?$/i.test(name);
+    if(placeholder){skill.n=fallback.n;changed=true}
+    const description=typeof skill.d==="string"?skill.d.trim():"";
+    if(!description||/^deskripsi(?: singkat)?(?: skill.*)?$/i.test(description)){
+      skill.d=placeholder?fallback.d:`Latih ${skill.n} secara bertahap dengan praktik rutin.`;
+      changed=true;
+    }
+    if(!skill.t){skill.t=fallback.t||`Latih ${skill.n} melalui praktik kecil.`;changed=true}
+    if(!skill.m){skill.m=fallback.m||`Selesaikan satu latihan ${skill.n} dan catat hasilnya.`;changed=true}
+  });
+  if(!st.core){st.core="Human-Centered AI";changed=true}
+  if(typeof st.hero!=="string"){st.hero="VIZONER";changed=true}
+  if(typeof st.practice!=="string"){st.practice="";changed=true}
+  if(typeof st.aiEnabled!=="boolean"){st.aiEnabled=false;changed=true}
+  if(!Array.isArray(st.missionHistory)){st.missionHistory=[];changed=true}
+  return changed;
+};
+if(fillEmptySkills())save();
+const $=id=>document.getElementById(id);
+const rank=v=>v>=90?"S":v>=80?"A":v>=65?"B":v>=50?"C":v>=30?"D":"E";
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,Number(v)||0));
+const skillColor=i=>`hsl(${(i*137.508+10)%360} 90% 62%)`;
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function head(){
+  $("hn").textContent=st.name;$("hc").textContent=st.cls;$("hi").textContent=(st.name||"?")[0].toUpperCase();
+  $("heroName").textContent=st.hero||"VIZONER";
+  $("coreAbility").textContent=st.core;
+  $("lvl").textContent="Lv. "+String(st.lvl).padStart(2,"0");
+  $("xpbar").style.width=st.en+"%";$("xpv").textContent=st.en+"%";
+  $("lastPractice").textContent=st.practice.trim()||"Belum ada catatan latihan.";
+  $("aiEnabled").checked=st.aiEnabled;
+  renderHistory();
+}
+function renderHistory(){
+  const list=$("missionHistory");
+  if(!list)return;
+  const labels={easy:"Mudah",right:"Pas",hard:"Sulit"};
+  list.innerHTML=st.missionHistory.slice(-5).reverse().map(item=>{
+    const date=item.at?new Date(item.at).toLocaleDateString("id-ID",{day:"numeric",month:"short"}):"";
+    return `<li><b>${esc(item.skill)} / ${labels[item.challenge]||"Tercatat"}</b><span>${esc(item.mission)}</span><small>${esc(item.evidence)}${date?` · ${date}`:""}</small></li>`;
+  }).join("")||"<li><span>Belum ada misi yang dicatat.</span></li>";
+}
+function list(animate){
+  const box=$("skills");box.innerHTML="";
+  st.skills.forEach((s,i)=>{
+    const on=Math.round(s.v/5);
+    const el=document.createElement("div");el.className="skill";
+    el.style.setProperty("--skill-color",skillColor(i));
+    el.innerHTML=`<div class="row"><span class="nm">${esc(s.n)}</span><span class="rk">${s.v} &nbsp;${rank(s.v)}</span></div>
+    <div class="seg">${Array.from({length:20},(_,j)=>`<i class="${animate?"":(j<on?"on":"")}"></i>`).join("")}</div>
+    <div class="ds">${esc(s.d)}</div>
+    <div class="skill-meta"><div class="skill-tech"><b>TEKNIK</b><span>${esc(s.t)}</span></div><div class="skill-milestone"><b>TARGET BERIKUTNYA</b><span>${esc(s.m)}</span></div></div>
+    <div class="sk-ed"><input data-k="n" value="${esc(s.n)}" aria-label="Nama skill" maxlength="30"><input data-k="v" type="number" min="0" max="100" value="${s.v}" aria-label="Level skill"><button class="del" type="button" aria-label="Hapus skill">×</button><input class="d" data-k="d" value="${esc(s.d)}" aria-label="Deskripsi skill" maxlength="80"><input class="t" data-k="t" value="${esc(s.t)}" aria-label="Teknik latihan" maxlength="80"><input class="m" data-k="m" value="${esc(s.m)}" aria-label="Target berikutnya" maxlength="80"></div>`;
+    el.querySelectorAll("input").forEach(inp=>inp.addEventListener("input",()=>{
+      const k=inp.dataset.k;s[k]=k==="v"?clamp(inp.value,0,100):inp.value;
+      if(k==="m"){s.mDone=false;s.stretchPending=false;s.nextTask="";s.hardCount=0}
+      save();
+      if(k==="v"){el.querySelector(".rk").innerHTML=s.v+" &nbsp;"+rank(s.v);const o=Math.round(s.v/5);el.querySelectorAll(".seg i").forEach((b,j)=>b.classList.toggle("on",j<o))}
+      else if(k==="n"){el.querySelector(".nm").textContent=s[k]}
+      else if(k==="d"){el.querySelector(".ds").textContent=s[k]}
+      else{el.querySelector(k==="t"?".skill-tech span":".skill-milestone span").textContent=s[k]}
+      radar();renderMission();
+    }));
+    el.querySelector(".del").addEventListener("click",()=>{st.skills.splice(i,1);save();list();radar()});
+    box.appendChild(el);
+    if(animate)el.querySelectorAll(".seg i").forEach((b,j)=>{if(j<on)setTimeout(()=>b.classList.add("on"),500+i*120+j*18)});
+  });
+  renderMission();
+}
+function renderMission(){
+  let index=st.skills.findIndex(skill=>skill.stretchPending);
+  if(index<0)index=st.skills.reduce((best,skill,i)=>{
+    if(skill.mDone)return best;
+    return best<0||Number(skill.v)<Number(st.skills[best].v)?i:best;
+  },-1);
+  const panel=$("missionPanel");
+  if(index<0){
+    panel.innerHTML='<p class="mission-tag">SEMUA MISI AWAL SELESAI</p><p class="mission-empty">Edit target skill untuk membuka misi berikutnya.</p>';
+    return;
+  }
+  const skill=st.skills[index];
+  const missionText=skill.nextTask||skill.stretchTask||(skill.stretchPending?`${skill.m} dalam konteks yang berbeda.`:skill.m);
+  const missionLabel=skill.nextTask?"LANGKAH YANG DISESUAIKAN":skill.stretchPending?"TANTANGAN LANJUTAN":"MISI BERIKUTNYA";
+  panel.innerHTML=`<p class="mission-tag">${missionLabel} / ${esc(skill.n)}</p><h3>${esc(skill.n)}</h3><p><b>Teknik:</b> ${esc(skill.t||"Pilih latihan kecil untuk skill ini.")}</p><p><b>Misi:</b> ${esc(missionText||"Tentukan target kecil lewat mode edit.")}</p><form class="mission-feedback" id="missionFeedback"><label for="missionEvidence">BUKTI ATAU HAL YANG KAMU PELAJARI</label><textarea id="missionEvidence" maxlength="240" minlength="3" required placeholder="Tulis hasil latihanmu secara singkat."></textarea><fieldset class="challenge-fieldset"><legend>TINGKAT TANTANGAN</legend><div class="challenge-options"><label class="challenge-option"><input type="radio" name="challenge" value="easy" required>Mudah</label><label class="challenge-option"><input type="radio" name="challenge" value="right" required>Pas</label><label class="challenge-option"><input type="radio" name="challenge" value="hard" required>Sulit</label></div></fieldset><button type="submit">SIMPAN &amp; ATUR MISI</button></form>`;
+  $("missionFeedback").addEventListener("submit",async event=>{
+    event.preventDefault();
+    const evidence=$("missionEvidence").value.trim();
+    const challenge=new FormData(event.currentTarget).get("challenge");
+    if(evidence.length<3||!challenge)return;
+    const button=event.currentTarget.querySelector("button[type=submit]");
+    button.disabled=true;
+    $("coachStatus").textContent=st.aiEnabled?"NVIDIA sedang menyusun misi berikutnya...":"Coach lokal sedang menyesuaikan misi...";
+    let plan;
+    if(st.aiEnabled){
+      try{
+        plan=await requestAiPlan(index,skill,missionText,challenge,evidence);
+        $("coachStatus").textContent=`Rencana NVIDIA: ${plan.reason}`;
+      }catch(error){
+        plan=localCoachPlan(index,skill,challenge,missionText);
+        $("coachStatus").textContent=`NVIDIA belum tersedia (${error.message}); misi disesuaikan secara lokal.`;
+      }
+    }else{
+      plan=localCoachPlan(index,skill,challenge,missionText);
+      $("coachStatus").textContent="Coach lokal menyesuaikan misi. Aktifkan NVIDIA AI jika ingin rekomendasi dari AI.";
+    }
+    applyMissionPlan(index,skill,missionText,challenge,evidence,plan);
+  });
+}
+function localCoachPlan(index,skill,challenge,missionText){
+  if(challenge==="hard")return{action:"retry",skillIndex:index,mission:(skill.hardCount||0)===0?`Langkah kecil: ${skill.t}`:`Coba selama 5 menit: ${skill.t}`,reason:"Langkah diperkecil agar lebih mudah dimulai."};
+  if(challenge==="easy"&&!skill.stretchPending)return{action:"stretch",skillIndex:index,mission:`Coba ${skill.m.toLowerCase()} pada konteks yang berbeda.`,reason:"Kamu siap mencoba tantangan serupa dalam konteks baru."};
+  const nextIndex=st.skills.reduce((best,candidate,i)=>{
+    if(i===index||candidate.mDone||candidate.stretchPending)return best;
+    return best<0||Number(candidate.v)<Number(st.skills[best].v)?i:best;
+  },-1);
+  if(nextIndex<0)return{action:"done",skillIndex:-1,mission:"",reason:"Semua misi skill saat ini sudah diselesaikan."};
+  const next=st.skills[nextIndex];
+  return{action:"next",skillIndex:nextIndex,mission:next.m,reason:`Misi berikutnya dipilih untuk melatih ${next.n}.`};
+}
+async function requestAiPlan(index,skill,mission,challenge,evidence){
+  const stage=skill.nextTask?"retry":skill.stretchPending?"stretch":"base";
+  const response=await fetch("/.netlify/functions/coach",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      current:{skillIndex:index,skillName:skill.n,mission,technique:skill.t,stage,hardCount:skill.hardCount||0,challenge,evidence},
+      skills:st.skills.map((item,i)=>({name:item.n,value:item.v,technique:item.t,target:item.m,done:Boolean(item.mDone&&!item.stretchPending&&i!==index)})),
+      recentHistory:st.missionHistory.slice(-5).map(item=>({skill:item.skill,challenge:item.challenge}))
+    })
+  });
+  let result;
+  try{result=await response.json()}catch{throw new Error("respons server tidak terbaca")}
+  if(!response.ok)throw new Error(result.error||"layanan AI tidak merespons");
+  const validActions=["retry","stretch","next","done"];
+  const validIndex=result.action==="done"
+    ?result.skillIndex===-1
+    :Number.isInteger(result.skillIndex)&&result.skillIndex>=0&&result.skillIndex<st.skills.length;
+  if(!validActions.includes(result.action)||!validIndex||typeof result.mission!=="string"||typeof result.reason!=="string")throw new Error("rencana AI tidak valid");
+  if(["retry","stretch"].includes(result.action)&&result.skillIndex!==index)throw new Error("skill rencana AI tidak sesuai");
+  if(result.action==="next"&&(result.skillIndex===index||st.skills[result.skillIndex].mDone))throw new Error("skill tujuan AI sudah selesai");
+  if(result.action!=="done"&&!result.mission.trim())throw new Error("misi AI kosong");
+  return{...result,mission:result.mission.trim().slice(0,300),reason:result.reason.trim().slice(0,180)};
+}
+function applyMissionPlan(index,skill,mission,challenge,evidence,plan){
+  st.missionHistory.push({skill:skill.n,mission,evidence,challenge,at:new Date().toISOString()});
+  st.missionHistory=st.missionHistory.slice(-50);
+  st.practice=`${skill.n}: ${evidence}`;
+  if(plan.action==="retry"){
+    skill.mDone=false;skill.stretchPending=false;skill.stretchTask="";
+    skill.hardCount=(skill.hardCount||0)+1;skill.nextTask=plan.mission;
+  }else if(plan.action==="stretch"){
+    skill.mDone=true;skill.stretchPending=true;skill.stretchTask=plan.mission;
+    skill.nextTask="";skill.hardCount=0;
+  }else{
+    skill.mDone=true;skill.stretchPending=false;skill.stretchTask="";
+    skill.nextTask="";skill.hardCount=0;
+    if(plan.action==="next"){
+      const next=st.skills[plan.skillIndex];
+      next.mDone=false;next.stretchPending=false;next.stretchTask="";next.nextTask=plan.mission;
+    }
+  }
+  save();head();renderMission();
+}
+function radar(){
+  const svg=$("radar"),S=st.skills,N=S.length,R=100;
+  if(N<3){svg.innerHTML='<text x="0" y="0" text-anchor="middle">Tambah minimal 3 skill untuk grafik</text>';return}
+  const pt=(i,k)=>{const a=-Math.PI/2+i*2*Math.PI/N;return[(Math.cos(a)*R*k).toFixed(1),(Math.sin(a)*R*k).toFixed(1)]};
+  let g="";
+  [.25,.5,.75,1].forEach(k=>{g+=`<polygon points="${S.map((_,i)=>pt(i,k).join(",")).join(" ")}" fill="none" stroke="var(--cyan)" stroke-opacity="${k===1?.5:.18}"/>`});
+  S.forEach((_,i)=>{g+=`<line x1="0" y1="0" x2="${pt(i,1)[0]}" y2="${pt(i,1)[1]}" stroke="${skillColor(i)}" stroke-opacity=".38"/>`});
+  g+=`<polygon points="${S.map((s,i)=>pt(i,s.v/100).join(",")).join(" ")}" fill="var(--cyan)" fill-opacity=".22" stroke="var(--cyan)" stroke-width="2" style="filter:drop-shadow(0 0 6px var(--cyan))"/>`;
+  S.forEach((s,i)=>{const[x,y]=pt(i,s.v/100);g+=`<circle cx="${x}" cy="${y}" r="4" fill="${skillColor(i)}"/>`});
+  S.forEach((s,i)=>{const[x,y]=pt(i,1.2);g+=`<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" style="fill:${skillColor(i)}">${esc(s.n.slice(0,12))}</text>`});
+  svg.innerHTML=g;
+}
+[["fn","name"],["fc","cls"],["fl","lvl"],["fe","en"],["fcore","core"],["fhero","hero"]].forEach(([id,k])=>{
+  $(id).addEventListener("input",e=>{
+    st[k]=k==="lvl"?clamp(e.target.value,1,999):k==="en"?clamp(e.target.value,0,100):e.target.value;
+    save();head();
+  });
+});
+$("practiceInput").addEventListener("input",e=>{st.practice=e.target.value;save();head()});
+$("aiEnabled").addEventListener("change",e=>{
+  st.aiEnabled=e.target.checked;save();
+  $("coachStatus").textContent=st.aiEnabled
+    ?"NVIDIA dipilih. Bukti latihan akan dikirim ke NVIDIA saat misi disimpan."
+    :"AI dinonaktifkan. Misi akan diatur oleh coach lokal.";
+});
+$("add").addEventListener("click",()=>{st.skills.push({n:"Skill baru",v:0,d:"",t:"Pilih latihan kecil untuk skill ini.",m:"Selesaikan satu latihan dan catat hasilnya.",mDone:false});save();list();radar()});
+$("eb").addEventListener("click",()=>{
+  const h=$("hud");h.classList.toggle("edit");$("eb").textContent=h.classList.contains("edit")?"SELESAI":"EDIT";
+  $("fn").value=st.name;$("fc").value=st.cls;$("fl").value=st.lvl;$("fe").value=st.en;$("fcore").value=st.core;$("fhero").value=st.hero;$("practiceInput").value=st.practice;
+});
+head();$("xpbar").style.width="0";setTimeout(()=>{$("xpbar").style.width=st.en+"%"},100);
+list(true);radar();
+// Simpan ke akun Claude (kalau halaman dibuka lewat claude.ai); di luar itu tetap pakai penyimpanan lokal
+(async()=>{try{
+  if(!window.claude)return;
+  const db=await claude.use("db"),user=await claude.use("user");
+  if(!db||!user)return;
+  const id=await user.id();
+  const ref=db.collection("data/users/"+id).doc("hud");
+  const snap=await ref.get();
+  let repaired=false;
+  if(snap.exists){const d=snap.data();if(d&&d.json){st=JSON.parse(d.json);repaired=fillEmptySkills();try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}
+    head();list();radar();$("fn").value=st.name;$("fc").value=st.cls;$("fl").value=st.lvl;$("fe").value=st.en}}
+  else{await ref.set({json:JSON.stringify(st)})}
+  cloud=ref;
+  if(snap.exists&&repaired)save();
+}catch(e){}})();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
